@@ -1,60 +1,58 @@
 from openai import OpenAI
 import json
+import os
 
 with open('key_ai.json') as f:
     data = json.load(f)
-with open('structured_output.json') as f:
-    structured_output = json.load(f)
-openai_api_key = data["openai_api_key"]
-tools = [structured_output]
-# tools = [{
-#     "type": "function",
-#     "name": "get_weather",
-#     "description": "Get current temperature for a given location.",
-#     "parameters": {
-#         "type": "object",
-#         "properties": {
-#             "location": {
-#                 "type": "string",
-#                 "description": "City and country e.g. Bogotá, Colombia"
-#             }
-#         },
-#         "required": [
-#             "location"
-#         ],
-#         "additionalProperties": False
-#     }
-# }]
 
+# with open('structured_output.json') as f:
+#     structured_output = json.load(f)
+
+openai_api_key = data["openai_api_key"]
+tools = [{
+    "type": "function",
+    "name": "get_ls_results",
+    "description": "Get result of ls -las function",
+    "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": False
+    }
+}]
 
 client = OpenAI(
     api_key=openai_api_key
 )
+input_messages=[{"role": "user", "content": "Try to call ls please!"}]
 response = client.responses.create(
     model="gpt-4.1-2025-04-14",
-    # input=[{"role": "user", "content": "Пожалуйста используй команду которую выберишь"}],
-    input=[{"role": "user", "content": "Call ls for me"}],
+    input = input_messages,
     tools=tools
 )
-# response = dict(response)
-# pretty = json.dumps(response, indent = 4)
 response_dict = response.model_dump()
 print(json.dumps(response_dict, indent=4, ensure_ascii=False))
-# print (type(response))
+tool_call = response.output[0]
+print(tool_call)
 
-# client = OpenAI(
-#     api_key=openai_api_key
-# )
+def get_ls_results():
+    print("get_ls_results was called!")
+    return os.listdir('.')
 
-# chat_completion = client.chat.completions.create(
-#     messages=[{
-#         "role": "system",
-#         "content": "You are an expert who responds to the best of your ability. Limit you responses to 1000 tokens."
-#     }, {
-#         "role": "user",
-#         "content": "Tell me up-to-date information about income tax in Finland."
-#     }],
-#     model=model,
-# )
+if tool_call.name == "get_ls_results":
+    print("get_ls_results will be called") 
+    ls_results = get_ls_results()
+    input_messages.append(tool_call)  # append model's function call message
 
-# print(chat_completion)
+    input_messages.append({                               # append result message
+        "type": "function_call_output",
+        "call_id": tool_call.call_id,
+        "output": str(ls_results)
+    })
+    
+    response_2 = client.responses.create(
+        model="gpt-4.1",
+        input=input_messages,
+        tools=tools,
+    )
+    print(response_2.output_text)
