@@ -1,0 +1,44 @@
+{
+  "name": "ai_agent_shell_commands",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "command": {
+        "type": "string",
+        "description": "The shell command that the AI agent is allowed to execute.",
+        "enum": [
+          "ls -lah"
+        ]
+      },
+      "output_format": {
+        "type": "string",
+        "description": "The format in which the output should be structured.",
+        "enum": [
+          "text",
+          "json"
+        ]
+      },
+      "parameters": {
+        "type": "object",
+        "description": "Additional parameters for executing the shell command.",
+        "properties": {
+          "directory": {
+            "type": "string",
+            "description": "The directory path to list files from."
+          }
+        },
+        "required": [
+          "directory"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "command",
+      "output_format",
+      "parameters"
+    ],
+    "additionalProperties": false
+  },
+  "strict": true
+}
