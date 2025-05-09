@@ -3,12 +3,10 @@ import json
 with open('key_ai.json') as f:
     data = json.load(f)
 openai_api_key = data["openai_api_key"]
-openai_api_base = "https://api.lambda.ai/v1"
-model = "llama-4-maverick-17b-128e-instruct-fp8"
+model = "gpt-4.1-2025-04-14"
 
 client = OpenAI(
-    api_key=openai_api_key,
-    base_url=openai_api_base,
+    api_key=openai_api_key
 )
 
 chat_completion = client.chat.completions.create(
